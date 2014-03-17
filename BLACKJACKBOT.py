@@ -1,9 +1,6 @@
 #################### BLACK JACK BOT
 from random import shuffle
-## possible moves
-	#hit
-	#stay
-	#split
+
 class Deck:
 	def __init__(self):
 		self.cards = []
@@ -33,12 +30,12 @@ def shuffleDeck(deck):
 	return shuffle(deck)
 
 """
-def deal(deck, num_of_cards):
+def deal(deck, num_of_cards): ## taks a deckname.cards and deals out the specificed number of cards 
 	cards = []
 	for i in xrange(num_of_cards):
 		cards.append(deck.pop())
 		i-=1
-	return cards ## taks a deck and deals out the specificed number of cards 
+	return cards
 #### move options ####
 def hit(player,deck):
 	player.hand += deal(deck,1)
@@ -60,11 +57,23 @@ def bust(player): ## takes a player and returns true of they have busted
 		return False 
 
 
-class player(object):
+class Player(object):
 	def __init__(self, name = 'BOT', hand = None, money = 0):
 		self.name = name
 		self.money = money
 		self.hand = hand
+
+	def has_ace(self):
+		has = False
+		for cards in self.hand:
+			if cards[0] == 'Ace':
+				has = True
+		return has
+
+
+class Dealer(object):
+	def __init__(self,hand = None):
+		self.hand = hand 
 
 
 def point_value(hand):## Give it hand and it returns the point value of the hand 
@@ -86,14 +95,20 @@ print newDeck.cards
 newDeck.shuffle()
 print newDeck.cards
 
-player1 = player
+player1 = Player()
 player1.hand = deal(newDeck.cards,2)
 print player1.hand
 print point_value(player1.hand)
+print player1.has_ace()
+
+hit(player1,newDeck.cards)
+print player1.hand
+print point_value(player1.hand)
+print player1.has_ace()
 
 """
 shuffleDeck(Deck_of_cards)
-player1 = player
+player1 = Player()
 player1.hand = deal(Deck_of_cards,2)
 print player1.hand
 print point_value(player1.hand)
