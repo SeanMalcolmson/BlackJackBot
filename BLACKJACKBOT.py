@@ -1,11 +1,22 @@
 #################### BLACK JACK BOT
-
+from random import shuffle
 ## possible moves
 	#hit
 	#stay
 	#split
-#### testing 1 2 3 
+class Deck:
+	def __init__(self):
+		self.cards = []
+		suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
+		values = [2,3,4,5,6,7,8,9,10,'Jack','Queen','King','Ace']
 
+		for suit in suits:
+			for card in values:
+				self.cards.append((card,suit))
+
+	def shuffle(self):
+		return shuffle(self.cards)
+"""
 Deck_of_cards = []
 
 suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
@@ -15,13 +26,13 @@ for suit in suits:
 	for card in values:
 		Deck_of_cards.append((card,suit))
 
-card_point_values = {} ## create a key/value table for cards ie jack is 10 queen is 10 ...
+
 
 from random import shuffle
 def shuffleDeck(deck):
 	return shuffle(deck)
 
-
+"""
 def deal(deck, num_of_cards):
 	cards = []
 	for i in xrange(num_of_cards):
@@ -29,8 +40,9 @@ def deal(deck, num_of_cards):
 		i-=1
 	return cards ## taks a deck and deals out the specificed number of cards 
 #### move options ####
-def hit():
-	pass
+def hit(player,deck):
+	player.hand += deal(deck,1)
+
 def stay():
 	pass
 def split():
@@ -41,13 +53,21 @@ def double():
 def bet(): ## 
 	pass
 
+def bust(player): ## takes a player and returns true of they have busted 
+	if point_value(player.hand) > 21:
+		return True
+	else:
+		return False 
+
+
 class player(object):
-	def __init__(self, name = 'BOT', money = 0):
+	def __init__(self, name = 'BOT', hand = None, money = 0):
 		self.name = name
 		self.money = money
+		self.hand = hand
 
 
-def point_value(hand):
+def point_value(hand):## Give it hand and it returns the point value of the hand 
 	points = 0
 	ace = ' '
 	for cards in hand:
@@ -61,17 +81,27 @@ def point_value(hand):
 
 
 
+newDeck = Deck()
+print newDeck.cards
+newDeck.shuffle()
+print newDeck.cards
 
-
-shuffleDeck(Deck_of_cards)
-hand1 = deal(Deck_of_cards,2)
-print hand1
-print point_value(hand1)
-
+player1 = player
+player1.hand = deal(newDeck.cards,2)
+print player1.hand
+print point_value(player1.hand)
 
 """
-print Deck_of_cards
 shuffleDeck(Deck_of_cards)
-print "-"*20 + "shuffled !!!" + "-"*20
-print Deck_of_cards
+player1 = player
+player1.hand = deal(Deck_of_cards,2)
+print player1.hand
+print point_value(player1.hand)
+
+hit(player1,Deck_of_cards)
+
+print player1.hand
+print point_value(player1.hand)
+
+
 """
