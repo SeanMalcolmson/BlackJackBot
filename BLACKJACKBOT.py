@@ -11,25 +11,9 @@ class Deck:
 			for card in values:
 				self.cards.append((card,suit))
 
-	def shuffle(self):
+	def shuffle(self): ## shuffles the deck with "deckName.shuffle()""
 		return shuffle(self.cards)
-"""
-Deck_of_cards = []
 
-suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
-values = [2,3,4,5,6,7,8,9,10,'Jack','Queen','King','Ace']
-
-for suit in suits:
-	for card in values:
-		Deck_of_cards.append((card,suit))
-
-
-
-from random import shuffle
-def shuffleDeck(deck):
-	return shuffle(deck)
-
-"""
 def deal(deck, num_of_cards): ## taks a deckname.cards and deals out the specificed number of cards 
 	cards = []
 	for i in xrange(num_of_cards):
@@ -63,30 +47,32 @@ class Player(object):
 		self.money = money
 		self.hand = hand
 
-	def has_ace(self):
-		has = False
-		for cards in self.hand:
-			if cards[0] == 'Ace':
-				has = True
-		return has
+
 
 
 class Dealer(object):
 	def __init__(self,hand = None):
 		self.hand = hand 
 
+def has_ace(hand): ## takes a hand of card and check if there is an ace in it
+	has = False
+	for cards in hand:
+		if cards[0] == 'Ace':
+			has = True
+	return has
 
 def point_value(hand):## Give it hand and it returns the point value of the hand 
 	points = 0
-	ace = ' '
 	for cards in hand:
 		if type(cards[0]) == int:
 			points+=cards[0]
 		elif cards[0] in ['Jack','Queen','King']:
 			points+=10
-		else:
-			ace =" + 1 or 11"
-	return str(points)+ace
+		else: ## if there is an ace first assume to give the player the higher value (11)
+			points +=11
+	if points > 21 and has_ace(hand): ## but if by taking the higher value of the ace(11) it would cause a bust value ace at 1 
+		points -= 10
+	return points
 
 
 
@@ -99,12 +85,14 @@ player1 = Player()
 player1.hand = deal(newDeck.cards,2)
 print player1.hand
 print point_value(player1.hand)
-print player1.has_ace()
+#print player1.has_ace()
 
 hit(player1,newDeck.cards)
 print player1.hand
 print point_value(player1.hand)
-print player1.has_ace()
+#print player1.has_ace()
+print "Do they have an ace? :" + str(has_ace(player1.hand))
+print "Did they bust? :" + str( bust(player1) )
 
 """
 shuffleDeck(Deck_of_cards)
