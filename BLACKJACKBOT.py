@@ -24,15 +24,13 @@ def deal(deck, num_of_cards): ## taks a deckname.cards and deals out the specifi
 def hit(player,deck):
 	player.hand += deal(deck,1)
 
-def stay():
+def stay(): ## technically stay you dont need to perform an aciton for
 	pass
-def split():
+def split():### this will not be implamented 
 	pass
-def double():
-	pass
-######################	
-def bet(): ## 
-	pass
+def double(): ## double hits you player once and doubles initial bet
+	pass       ## can recive no more cards after 
+
 
 def bust(player): ## takes a player and returns true of they have busted 
 	if point_value(player.hand) > 21:
@@ -40,15 +38,75 @@ def bust(player): ## takes a player and returns true of they have busted
 	else:
 		return False 
 
+############################ NEW STUFFF ###############################################
+#######################################################################################
+DealerDict ={2:0,3:1,4:2,5:3,6:4,7:5,8:6,9:7,'King':8,'Queen':8,'Jack':8,10:8,'Ace':9} ## note that king queen jack and 10 keys point to the same column as they all are valued 10 points 
+
+PlayerDict ={21:0,20:0,19:0,18:0,17:0,16:1,15:2,14:3,13:4,12:5,11:6,10:7,9:8,8:9,7:10,6:11,5:12, ## note that 17-21 points will fallow same strat box to save evolution time
+ 'soft 21':13, 'soft 20':14, 'soft 19':15, 'soft 18':16, 'soft 17':17,'soft 16':18,'soft 15':19, 'soft 14':20, 'soft 13':21,
+ ('Ace','Ace'):22,('King','King'):23,('Queen','Queen'):23,('Jack','Jack'):23,(10,10):23,(9,9):24,(8,8):25,(7,7):26,(6,6):27,(5,5):28,(4,4):29,(3,3):30,(2,2):31} ## (10,10) could be 10 card or 1 of jack king queen 
+
+
+## create a 32 x 10 array
+import random
+
+class StratagyTable:
+	def __init__(self):
+		self.grid = []
+		typesOfMoves = ['Hit','Stay','Double']  ## excluding Split move to simplify code 
+		for i in range(32): 
+			row = []
+			for j in range(10):
+				row.append(random.choice(typesOfMoves))
+
+			self.grid.append(row)
+	def get_move(self,playerHand,dealerHand):
+		####### working on this#######
+		## player shouldnt be able to hit again if they have doubled or decided to stay 
+		## otherwise they may continue to hit while under 21 
+
+
+		playerCards = convert_format(playerHand) 
+		dealer1stCard = dealerHand[0][0]
+
+		rowNum = PlayerDict[playerCards]
+		colNum = DealerDict[dealer1stCard]
+		return self.grid[rowNum][colNum]
+
+def hard_ace_count(hand): ## returns what the value of the hand would be with hard aces(1 point each)
+	points = 0
+	for cards in hand:
+		if type(cards[0]) == int:
+			points+=cards[0]
+		elif cards[0] in ['Jack','Queen','King']:
+			points+=10
+		else: ## values hard aces at 1
+			points +=1
+	return points
+
+def convert_format(hand): ## convits the format of the hand to somthing that the table/dict can use
+	## check for double hands eg. (10,10)
+	if len(hand) ==2 and hand[0][0] == hand[1][0]:
+		return (hand[0][0],hand[1][0])
+
+	## below check for soft vs hard hands
+	elif point_value(hand) > hard_ace_count(hand):
+		return "soft "+str(point_value(hand))
+	else:
+		return point_value(hand)
+########################################################### END OF NEW STUFF ########################################################
+#####################################################################################################################################
+def print_array(array):
+	for rows in array:
+		print rows
 
 class Player(object):
 	def __init__(self, name = 'BOT', hand = None, money = 0):
 		self.name = name
 		self.money = money
 		self.hand = hand
-
-
-
+		## maybe add a currentBet variable here for implementing double 
+		## and a hasdouble or has stayed variable 
 
 class Dealer(object):
 	def __init__(self,hand = None):
@@ -130,7 +188,7 @@ def test2Player(): ## Player vs Dealer both using dealer stratagy
 	player2.money = 100
 	freshDeck  = Deck()
 	freshDeck.shuffle()
-	while len(freshDeck.cards) > 8:
+	while len(freshDeck.cards) > 8: ## keep going until the deck has about 8 cards left just in case they might run out mid game 
 		dealer.hand = deal(freshDeck.cards,2)
 		player2.hand = deal(freshDeck.cards,2)
 		print "Dealer start hand:" + str(dealer.hand)
@@ -145,7 +203,36 @@ def test2Player(): ## Player vs Dealer both using dealer stratagy
 		print "the winner is: " +who_wins(dealer,player2)
 	print "player 2 has this much money: " + str(player2.money)
 
+##test2Player() ## Uncomment this to test 2players using dealer strat testing 
 
+## Initialising single random Stratagy table and printing it out
+test = StratagyTable()
+print "-"*25 + "StratagyTable" + "-"*25
+print_array(test.grid)
+print "-"*50
 
+def play_using_strat(stratagytable, NumberOfTestingHands):
+	dealer = Player()
+	dealer.name = 'Dealer'
 
-test2Player()
+	player2 = Player()
+	player2.name = 'player2'
+	player2.money = 100
+	freshDeck = Deck()
+	freshDeck.shuffle()
+
+	numOfHandsPlayed = 0
+	while numOfHandsPlayed < NumberOfTestingHands:
+		numOfHandsPlayed+=1
+		if len(freshDeck.cards) < 8:
+			new = Deck()
+			new.shuffle()
+			freshDeck.cards += new.cards
+
+		dealer.hand = deal(freshDeck.cards,2)
+		player2.hand = deal(freshDeck.cards,2)
+		print "Dealer start hand:" + str(dealer.hand)
+		print "player2 start hand:" + str(player2.hand)
+		print "The Player should "+ str(stratagytable.get_move(player2.hand,dealer.hand))
+
+play_using_strat(test,1000)
