@@ -53,6 +53,7 @@ import random
 class StratagyTable:
 	def __init__(self):
 		self.grid = []
+		self.successValue = 0 ## this will be used to find most successfull stratagy
 		typesOfMoves = ['Hit','Stay','Double']  ## excluding Split move to simplify code 
 		for i in range(32): 
 			row = []
@@ -106,6 +107,8 @@ class Player(object):
 		self.money = money
 		self.hand = hand
 		## maybe add a currentBet variable here for implementing double 
+		self.canHit = True
+		self.betAmount = 5
 		## and a hasdouble or has stayed variable 
 
 class Dealer(object):
@@ -138,28 +141,6 @@ def point_value(hand):## Give it hand and it returns the point value of the hand
 			points -= 10
 	return points
 
-
-"""
-## NOTE maybe switch all fuctions to take player as the argument instead of player.hand to make things cleaner 
-newDeck = Deck()
-print newDeck.cards
-newDeck.shuffle()
-print newDeck.cards
-
-player1 = Player()
-player1.hand = deal(newDeck.cards,2)
-print player1.hand
-print point_value(player1.hand)
-#print player1.has_ace()
-
-hit(player1,newDeck.cards)
-print player1.hand
-print point_value(player1.hand)
-#print player1.has_ace()
-print "Do they have an ace? :" + str(has_ace(player1.hand))
-print "Did they bust? :" + str( bust(player1) )
-
-"""
 
 def who_wins(dealer,player):
 	if bust(player):
@@ -211,13 +192,26 @@ print "-"*25 + "StratagyTable" + "-"*25
 print_array(test.grid)
 print "-"*50
 
-def play_using_strat(stratagytable, NumberOfTestingHands):
+def do_move(player,move,deck): ## little fuciton to perform the move read from the table 
+	if move == 'Stay':
+		player.canHit = False
+	elif move == 'Hit':
+		hit(player,deck.cards)
+		print "hitting"
+
+	else: ## double
+		hit(player,deck.cards)
+		player.canHit = False 
+		player.betAmount *=2
+		print "doubling"
+
+def play_using_strat(stratagytable, NumberOfTestingHands):  ## takes the random statatgy grid and number of hands you want to test with it 
 	dealer = Player()
 	dealer.name = 'Dealer'
 
 	player2 = Player()
 	player2.name = 'player2'
-	player2.money = 100
+	player2.money = 1000
 	freshDeck = Deck()
 	freshDeck.shuffle()
 
@@ -231,8 +225,17 @@ def play_using_strat(stratagytable, NumberOfTestingHands):
 
 		dealer.hand = deal(freshDeck.cards,2)
 		player2.hand = deal(freshDeck.cards,2)
+		player2.canHit = True
 		print "Dealer start hand:" + str(dealer.hand)
 		print "player2 start hand:" + str(player2.hand)
 		print "The Player should "+ str(stratagytable.get_move(player2.hand,dealer.hand))
+		do_move(player2,stratagytable.get_move(player2.hand,dealer.hand),freshDeck)
+		while player2.canHit == True:
+			print "do another move"
+			do_move(player2,stratagytable.get_move(player2.hand,dealer.hand),freshDeck) ### need to check if you have busted before searching the move table #####
+			
+
+
 
 play_using_strat(test,1000)
+
