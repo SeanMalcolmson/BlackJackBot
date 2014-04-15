@@ -53,7 +53,7 @@ import random
 class StratagyTable:
 	def __init__(self):
 		self.grid = []
-		self.successValue = 0 ## this will be used to find most successfull stratagy
+		self.fitness = 0 ## this will be used to find most successfull stratagy
 		typesOfMoves = ['Hit','Stay','Double']  ## excluding Split move to simplify code 
 		for i in range(32): 
 			row = []
@@ -65,11 +65,12 @@ class StratagyTable:
 		####### working on this#######
 		## player shouldnt be able to hit again if they have doubled or decided to stay 
 		## otherwise they may continue to hit while under 21 
-
+		if point_value(playerHand) > 21: ## testing this part 
+			return "Bust"
 
 		playerCards = convert_format(playerHand) 
 		dealer1stCard = dealerHand[0][0]
-
+		
 		rowNum = PlayerDict[playerCards]
 		colNum = DealerDict[dealer1stCard]
 		return self.grid[rowNum][colNum]
@@ -158,8 +159,26 @@ def who_wins(dealer,player):
 		player.money +=5
 		return player.name
 
+def who_winsV2(dealer,player):
+	if point_value(player.hand) == 21: ## hitting blackjack has a payout of 3/2 * bet
+		player.money += (3/2.0)*player.betAmount
+		return player.name
+	elif bust(player):
+		player.money -=player.betAmount
+		return dealer.name
+	elif bust(dealer):
+		player.money += player.betAmount
+		return player.name
+	elif point_value(dealer.hand) > point_value(player.hand):
+		player.money -=player.betAmount
+		return dealer.name
+	elif point_value(dealer.hand) == point_value(player.hand):
+		return "Tie Game"
+	else:
+		player.money +=player.betAmount
+		return player.name
 
-### working on below 
+
 def test2Player(): ## Player vs Dealer both using dealer stratagy 
 	dealer =  Player()
 	dealer.name = 'Dealer'
@@ -195,15 +214,19 @@ print "-"*50
 def do_move(player,move,deck): ## little fuciton to perform the move read from the table 
 	if move == 'Stay':
 		player.canHit = False
+		print 'Staying'
 	elif move == 'Hit':
 		hit(player,deck.cards)
 		print "hitting"
 
-	else: ## double
+	elif move == 'Double': ## double
 		hit(player,deck.cards)
 		player.canHit = False 
 		player.betAmount *=2
 		print "doubling"
+	else:
+		print "busted"
+		player.canHit = False
 
 def play_using_strat(stratagytable, NumberOfTestingHands):  ## takes the random statatgy grid and number of hands you want to test with it 
 	dealer = Player()
@@ -226,16 +249,36 @@ def play_using_strat(stratagytable, NumberOfTestingHands):  ## takes the random 
 		dealer.hand = deal(freshDeck.cards,2)
 		player2.hand = deal(freshDeck.cards,2)
 		player2.canHit = True
+		player2.betAmount = 5
 		print "Dealer start hand:" + str(dealer.hand)
 		print "player2 start hand:" + str(player2.hand)
 		print "The Player should "+ str(stratagytable.get_move(player2.hand,dealer.hand))
 		do_move(player2,stratagytable.get_move(player2.hand,dealer.hand),freshDeck)
 		while player2.canHit == True:
 			print "do another move"
-			do_move(player2,stratagytable.get_move(player2.hand,dealer.hand),freshDeck) ### need to check if you have busted before searching the move table #####
-			
+			do_move(player2,stratagytable.get_move(player2.hand,dealer.hand),freshDeck)
+		while point_value(dealer.hand) < 17:
+			hit(dealer,freshDeck.cards)
+		print "Dealer end hand:" + str(dealer.hand) + "its point value is:" + str(point_value(dealer.hand))
+		print "player2 end hand:" + str(player2.hand) + "its point value is:" + str(point_value(player2.hand))
+		print "the winner is: " +who_winsV2(dealer,player2)  ## need a new who_wins fuciton 
+	print "player 2 has this much money: " + str(player2.money)
+	stratagytable.fitness = player2.money
+	print "the finess of this player statatgy is: " + str(stratagytable.fitness) 
 
 
 
-play_using_strat(test,1000)
+#play_using_strat(test,1000)
 
+
+def create_base_poputation(size):
+
+	basePopSize = size
+	while basePopSize > 0:
+		new = StratagyTable()
+		print_array(new.grid)
+		play_using_strat(new,10)
+		basePopSize -=1
+
+
+create_base_poputation(10)
