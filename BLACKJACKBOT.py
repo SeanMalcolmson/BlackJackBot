@@ -206,29 +206,32 @@ def test2Player(): ## Player vs Dealer both using dealer stratagy
 ##test2Player() ## Uncomment this to test 2players using dealer strat testing 
 
 ## Initialising single random Stratagy table and printing it out
+"""
 test = StratagyTable()
 print "-"*25 + "StratagyTable" + "-"*25
 print_array(test.grid)
 print "-"*50
-
+"""
 def do_move(player,move,deck): ## little fuciton to perform the move read from the table 
+	################ UN-Comment prints statemet to see whats going on ###############@
 	if move == 'Stay':
 		player.canHit = False
-		print 'Staying'
+		##print 'Staying'
 	elif move == 'Hit':
 		hit(player,deck.cards)
-		print "hitting"
+		##print "hitting"
 
 	elif move == 'Double': ## double
 		hit(player,deck.cards)
 		player.canHit = False 
 		player.betAmount *=2
-		print "doubling"
+		##print "doubling"
 	else:
-		print "busted"
+		##print "busted"
 		player.canHit = False
 
 def play_using_strat(stratagytable, NumberOfTestingHands):  ## takes the random statatgy grid and number of hands you want to test with it 
+	################ UN-Comment prints statemet to see whats going on ###############@
 	dealer = Player()
 	dealer.name = 'Dealer'
 
@@ -241,7 +244,7 @@ def play_using_strat(stratagytable, NumberOfTestingHands):  ## takes the random 
 	numOfHandsPlayed = 0
 	while numOfHandsPlayed < NumberOfTestingHands:
 		numOfHandsPlayed+=1
-		if len(freshDeck.cards) < 8:
+		if len(freshDeck.cards) < 12:
 			new = Deck()
 			new.shuffle()
 			freshDeck.cards += new.cards
@@ -250,21 +253,22 @@ def play_using_strat(stratagytable, NumberOfTestingHands):  ## takes the random 
 		player2.hand = deal(freshDeck.cards,2)
 		player2.canHit = True
 		player2.betAmount = 5
-		print "Dealer start hand:" + str(dealer.hand)
-		print "player2 start hand:" + str(player2.hand)
-		print "The Player should "+ str(stratagytable.get_move(player2.hand,dealer.hand))
+		##print "Dealer start hand:" + str(dealer.hand)
+		##print "player2 start hand:" + str(player2.hand)
+		##print "The Player should "+ str(stratagytable.get_move(player2.hand,dealer.hand))
 		do_move(player2,stratagytable.get_move(player2.hand,dealer.hand),freshDeck)
 		while player2.canHit == True:
-			print "do another move"
+			##print "do another move"
 			do_move(player2,stratagytable.get_move(player2.hand,dealer.hand),freshDeck)
 		while point_value(dealer.hand) < 17:
 			hit(dealer,freshDeck.cards)
-		print "Dealer end hand:" + str(dealer.hand) + "its point value is:" + str(point_value(dealer.hand))
-		print "player2 end hand:" + str(player2.hand) + "its point value is:" + str(point_value(player2.hand))
-		print "the winner is: " +who_winsV2(dealer,player2)  ## need a new who_wins fuciton 
-	print "player 2 has this much money: " + str(player2.money)
+		##print "Dealer end hand:" + str(dealer.hand) + "its point value is:" + str(point_value(dealer.hand))
+		##print "player2 end hand:" + str(player2.hand) + "its point value is:" + str(point_value(player2.hand))
+		##print "the winner is: " +who_winsV2(dealer,player2)  ## need a new who_wins fuciton 
+		who_winsV2(dealer,player2) ## Comment out this if you uncomment the above line
+	##print "player 2 has this much money: " + str(player2.money)
 	stratagytable.fitness = player2.money
-	print "the finess of this player statatgy is: " + str(stratagytable.fitness) 
+	#print "the finess of this player statatgy is: " + str(stratagytable.fitness) 
 
 
 
@@ -272,13 +276,69 @@ def play_using_strat(stratagytable, NumberOfTestingHands):  ## takes the random 
 
 
 def create_base_poputation(size):
-
+	basePopulationStrats = []
 	basePopSize = size
 	while basePopSize > 0:
 		new = StratagyTable()
-		print_array(new.grid)
-		play_using_strat(new,10)
+		basePopulationStrats.append(new)
+		##print_array(new.grid)
+		play_using_strat(new,1000) ## test each strat with 1000 hands 
 		basePopSize -=1
+	return basePopulationStrats
+
+####working on below 
+
+workingPopulation = [] ## this will be a list contaiging the current populations of stratagy tables
+## the list will be ammended as better stratagyies are found 
+print "_"*50 + "Base Population Statagys" + '_'*50
+workingPopulation+=create_base_poputation(100)
+"""
+for strats in workingPopulation:
+	print '_' *100
+	print_array(strats.grid)
+	print "the finess of this player statatgy is: " + str(strats.fitness)
+"""
+workingPopulation = sorted(workingPopulation, key=lambda StratagyTable: StratagyTable.fitness)
+print "Sorted base pop" * 3
+for strats in workingPopulation:
+	##print '_' *100
+	##print_array(strats.grid) ## uncomment this if you want to see the actual statagy tables 
+	print "the finess of this player statatgy is: " + str(strats.fitness)
 
 
-create_base_poputation(10)
+def get_top_50(workingPop): 
+	workingPop = sorted(workingPop, key=lambda StratagyTable: StratagyTable.fitness) ## sorts it in order of fittest first before slicing the list 
+	tempList = workingPop[len(workingPop)/2:]
+	return tempList
+
+testing  = get_top_50(workingPopulation)
+print '-'*50 + 'Top 50' +'-'*50
+for strats in testing:
+	print "the finess of this player statatgy is: " + str(strats.fitness)
+
+best =  testing[-1]
+print_array(best.grid)
+
+import copy
+
+def mutate(stratagytable): ### this might change the original make a deep copy
+	newStrat = copy.deepcopy(stratagytable)
+	chanceToMutate = 5 ## % chance of each element mutatating 
+	typesOfMoves = ['Hit','Stay','Double']  ## excluding Split move to simplify code
+	for row in range(32): 
+			for col in range(10):
+				if random.randint(0,100) < chanceToMutate:
+					newStrat.grid[row][col] = random.choice(typesOfMoves)
+	return newStrat
+print '-'*50 + 'mutate test' +'-'*50
+testinMutate = mutate(best)
+print_array(testinMutate.grid)
+
+def crossOver(table1,table2):
+	randomRows = [range(32)]
+
+
+
+randomRows = range(32)
+shuffle(randomRows)
+print randomRows[:16]
