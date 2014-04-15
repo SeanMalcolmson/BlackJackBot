@@ -99,8 +99,10 @@ def convert_format(hand): ## convits the format of the hand to somthing that the
 ########################################################### END OF NEW STUFF ########################################################
 #####################################################################################################################################
 def print_array(array):
+	rowNum = 0
 	for rows in array:
-		print rows
+		print str(rowNum)+": " + str(rows)
+		rowNum+=1
 
 class Player(object):
 	def __init__(self, name = 'BOT', hand = None, money = 0):
@@ -286,8 +288,9 @@ def create_base_poputation(size):
 		basePopSize -=1
 	return basePopulationStrats
 
-####working on below 
-
+####working on below ######################################################################################################
+###########################################################################################################################
+###########################################################################################################################
 workingPopulation = [] ## this will be a list contaiging the current populations of stratagy tables
 ## the list will be ammended as better stratagyies are found 
 print "_"*50 + "Base Population Statagys" + '_'*50
@@ -311,6 +314,12 @@ def get_top_50(workingPop):
 	tempList = workingPop[len(workingPop)/2:]
 	return tempList
 
+
+##workingPopulation = get_top_50(workingPopulation)
+##print 'working pop top 50'*5
+##for strats in workingPopulation:
+	##print "the finess of this player statatgy is: " + str(strats.fitness)
+"""
 testing  = get_top_50(workingPopulation)
 print '-'*50 + 'Top 50' +'-'*50
 for strats in testing:
@@ -318,27 +327,67 @@ for strats in testing:
 
 best =  testing[-1]
 print_array(best.grid)
+"""
 
 import copy
 
-def mutate(stratagytable): ### this might change the original make a deep copy
-	newStrat = copy.deepcopy(stratagytable)
-	chanceToMutate = 5 ## % chance of each element mutatating 
+def mutate(stratagytable): ### Used by 'crossOver' fuction 
+	#newStrat = copy.deepcopy(stratagytable)
+	chanceToMutate = 10 ## % chance of each element mutatating 
 	typesOfMoves = ['Hit','Stay','Double']  ## excluding Split move to simplify code
 	for row in range(32): 
 			for col in range(10):
 				if random.randint(0,100) < chanceToMutate:
-					newStrat.grid[row][col] = random.choice(typesOfMoves)
-	return newStrat
+					stratagytable.grid[row][col] = random.choice(typesOfMoves)
+	return stratagytable
+
+"""
 print '-'*50 + 'mutate test' +'-'*50
 testinMutate = mutate(best)
 print_array(testinMutate.grid)
+"""
+def crossOver(table1,table2): ## Crosses overs to stratagies you give it ALSO mutates 
+	rowNums = range(32)
+	shuffle(rowNums)
+	RandomRows = rowNums[:16]
+	newStrat = copy.deepcopy(table1)
+	for row in RandomRows:
+		newStrat.grid[row] = table2.grid[row][:]
+	return mutate(newStrat)
+"""
+testCrossOver = crossOver(best,testinMutate)
+print '-'*50 + 'crossOver test' +'-'*50
+print_array(testCrossOver.grid)
 
-def crossOver(table1,table2):
-	randomRows = [range(32)]
+"""
+def create_addtional_mutated50(workingpop50):
+	newList =[]
+	numToAdd = 50
+	while numToAdd > 0:
+		random2 = random.sample(workingpop50,2)
+		newStrat = crossOver(random2[0],random2[1])
+		play_using_strat(newStrat,1000)
+		newList.append(newStrat)
+		numToAdd-=1
+	newList = sorted(newList, key=lambda StratagyTable: StratagyTable.fitness)
+	return newList
+
+##print 'new mutated 50' *5 
+##for strats in create_addtional_mutated50(workingPopulation):
+	#print "the finess of this player statatgy is: " + str(strats.fitness)
+
+def genetic_algorithem(numberOfGenerations,workingPopulation):
+	while numberOfGenerations > 0:
+		workingPopulation = get_top_50(workingPopulation)
+		workingPopulation += create_addtional_mutated50(workingPopulation)
+		workingPopulation = sorted(workingPopulation, key=lambda StratagyTable: StratagyTable.fitness)
+		numberOfGenerations-=1
+	return workingPopulation
 
 
-
-randomRows = range(32)
-shuffle(randomRows)
-print randomRows[:16]
+print "-"*50 +'genetic_algorithem' + '-'*50
+workingPopulation = genetic_algorithem(100,workingPopulation)
+for strats in workingPopulation:
+	print "the fitness of this player statatgy is: " + str(strats.fitness)
+print "The Best Result in 10 Generations was :" +str(workingPopulation[-1].fitness)
+print_array(workingPopulation[-1].grid)
