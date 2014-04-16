@@ -23,14 +23,7 @@ def deal(deck, num_of_cards): ## taks a deckname.cards and deals out the specifi
 #### move options ####
 def hit(player,deck):
 	player.hand += deal(deck,1)
-
-def stay(): ## technically stay you dont need to perform an aciton for
-	pass
-def split():### this will not be implamented 
-	pass
-def double(): ## double hits you player once and doubles initial bet
-	pass       ## can recive no more cards after 
-
+## stay and double located in do_move
 
 def bust(player): ## takes a player and returns true of they have busted 
 	if point_value(player.hand) > 21:
@@ -38,8 +31,6 @@ def bust(player): ## takes a player and returns true of they have busted
 	else:
 		return False 
 
-############################ NEW STUFFF ###############################################
-#######################################################################################
 DealerDict ={2:0,3:1,4:2,5:3,6:4,7:5,8:6,9:7,'King':8,'Queen':8,'Jack':8,10:8,'Ace':9} ## note that king queen jack and 10 keys point to the same column as they all are valued 10 points 
 
 PlayerDict ={21:0,20:0,19:0,18:0,17:0,16:1,15:2,14:3,13:4,12:5,11:6,10:7,9:8,8:9,7:10,6:11,5:12, ## note that 17-21 points will fallow same strat box to save evolution time
@@ -62,10 +53,9 @@ class StratagyTable:
 
 			self.grid.append(row)
 	def get_move(self,playerHand,dealerHand):
-		####### working on this#######
 		## player shouldnt be able to hit again if they have doubled or decided to stay 
 		## otherwise they may continue to hit while under 21 
-		if point_value(playerHand) > 21: ## testing this part 
+		if point_value(playerHand) > 21:  
 			return "Bust"
 
 		playerCards = convert_format(playerHand) 
@@ -96,14 +86,14 @@ def convert_format(hand): ## convits the format of the hand to somthing that the
 		return "soft "+str(point_value(hand))
 	else:
 		return point_value(hand)
-########################################################### END OF NEW STUFF ########################################################
-#####################################################################################################################################
+
 def print_array(array):
 	rowNum = 0
 	for rows in array:
 		print str(rowNum)+": " + str(rows)
 		rowNum+=1
-def print_array_clean(array):
+
+def print_array_clean(array): ## a nicer format for the strat tables 
 	print "-"*50+"Dealer Card Up" +'-'*50
 	LAYOUT = "{!s:15} {!s:8} {!s:8} {!s:8} {!s:8} {!s:8} {!s:8} {!s:8} {!s:8} {!s:20} {!s:10}"
 	print LAYOUT.format(' ',2,3,4,5,6,7,8,9,"10/Jack/Queen/King","Ace")
@@ -120,14 +110,8 @@ class Player(object):
 		self.name = name
 		self.money = money
 		self.hand = hand
-		## maybe add a currentBet variable here for implementing double 
 		self.canHit = True
 		self.betAmount = 5
-		## and a hasdouble or has stayed variable 
-
-class Dealer(object):
-	def __init__(self,hand = None):
-		self.hand = hand 
 
 def has_ace(hand): ## takes a hand of card and check if there is an ace in it
 	has = False
@@ -156,22 +140,6 @@ def point_value(hand):## Give it hand and it returns the point value of the hand
 	return points
 
 
-def who_wins(dealer,player):
-	if bust(player):
-		player.money -=5
-		return dealer.name
-	elif bust(dealer):
-		player.money += 5
-		return player.name
-	elif point_value(dealer.hand) > point_value(player.hand):
-		player.money -=5
-		return dealer.name
-	elif point_value(dealer.hand) == point_value(player.hand):
-		return "Tie Game"
-	else:
-		player.money +=5
-		return player.name
-
 def who_winsV2(dealer,player):
 	if point_value(player.hand) == 21: ## hitting blackjack has a payout of 3/2 * bet
 		player.money += (3/2.0)*player.betAmount
@@ -191,32 +159,6 @@ def who_winsV2(dealer,player):
 		player.money +=player.betAmount
 		return player.name
 
-
-def test2Player(): ## Player vs Dealer both using dealer stratagy 
-	dealer =  Player()
-	dealer.name = 'Dealer'
-	# assuming the dealer has unlimted money
-	player2 = Player()
-	player2.name = 'Player2'
-	player2.money = 100
-	freshDeck  = Deck()
-	freshDeck.shuffle()
-	while len(freshDeck.cards) > 8: ## keep going until the deck has about 8 cards left just in case they might run out mid game 
-		dealer.hand = deal(freshDeck.cards,2)
-		player2.hand = deal(freshDeck.cards,2)
-		print "Dealer start hand:" + str(dealer.hand)
-		print "player2 start hand:" + str(player2.hand)
-		while point_value(dealer.hand) < 17:
-			hit(dealer,freshDeck.cards)
-		while point_value(player2.hand) < 17:
-			hit(player2,freshDeck.cards)
-		print "Dealer end hand:" + str(dealer.hand) + "its point value is:" + str(point_value(dealer.hand))
-		print "player2 end hand:" + str(player2.hand) + "its point value is:" + str(point_value(player2.hand))
-
-		print "the winner is: " +who_wins(dealer,player2)
-	print "player 2 has this much money: " + str(player2.money)
-
-##test2Player() ## Uncomment this to test 2players using dealer strat testing 
 
 ## Initialising single random Stratagy table and printing it out
 """
@@ -281,12 +223,53 @@ def play_using_strat(stratagytable, NumberOfTestingHands):  ## takes the random 
 		who_winsV2(dealer,player2) ## Comment out this if you uncomment the above line
 	##print "player 2 has this much money: " + str(player2.money)
 	stratagytable.fitness = player2.money
-	#print "the finess of this player statatgy is: " + str(stratagytable.fitness) 
+	#print "the fitness of this player statatgy is: " + str(stratagytable.fitness) 
+
+def play_using_stratPRINTABLE(stratagytable, NumberOfTestingHands):  ##  Just a printable version of the play testing fuction
+	dealer = Player()
+	dealer.name = 'Dealer'
+	player2 = Player()
+	player2.name = 'player2'
+	player2.money = 1000
+	freshDeck = Deck()
+	freshDeck.shuffle()
+
+	numOfHandsPlayed = 0
+	while numOfHandsPlayed < NumberOfTestingHands:
+		numOfHandsPlayed+=1
+		if len(freshDeck.cards) < 12:
+			new = Deck()
+			new.shuffle()
+			freshDeck.cards += new.cards
+
+		dealer.hand = deal(freshDeck.cards,2)
+		player2.hand = deal(freshDeck.cards,2)
+		player2.canHit = True
+		player2.betAmount = 5
+		print "Dealer start hand:" + str(dealer.hand)
+		print "player2 start hand:" + str(player2.hand)
+		print "The Player should "+ str(stratagytable.get_move(player2.hand,dealer.hand))
+		do_move(player2,stratagytable.get_move(player2.hand,dealer.hand),freshDeck)
+		while player2.canHit == True:
+			print "do another move"
+			do_move(player2,stratagytable.get_move(player2.hand,dealer.hand),freshDeck)
+		while point_value(dealer.hand) < 17:
+			hit(dealer,freshDeck.cards)
+		print "Dealer end hand:" + str(dealer.hand) + "its point value is:" + str(point_value(dealer.hand))
+		print "player2 end hand:" + str(player2.hand) + "its point value is:" + str(point_value(player2.hand))
+		print "the winner is: " +who_winsV2(dealer,player2)  ## need a new who_wins fuciton 
+		##who_winsV2(dealer,player2) ## Comment out this if you uncomment the above line
+	print "player 2 has this much money: " + str(player2.money)
+	stratagytable.fitness = player2.money
+	print "the fitness of this player statatgy is: " + str(stratagytable.fitness) 
 
 
-
-#play_using_strat(test,1000)
-
+print "-"*50 +'Example of Play Testing Random Table' + '-'*50 ### this is just to show you what is happening durring play testing
+testStrat = StratagyTable()
+play_using_stratPRINTABLE(testStrat,10)
+print " "
+print "-"*50 +'Example of a Random Strategy Table' + '-'*50 
+print_array_clean(testStrat.grid)
 
 def create_base_poputation(size):
 	basePopulationStrats = []
@@ -299,25 +282,18 @@ def create_base_poputation(size):
 		basePopSize -=1
 	return basePopulationStrats
 
-####working on below ######################################################################################################
-###########################################################################################################################
-###########################################################################################################################
+
 workingPopulation = [] ## this will be a list contaiging the current populations of stratagy tables
 ## the list will be ammended as better stratagyies are found 
 print "_"*50 + "Base Population Statagys" + '_'*50
 workingPopulation+=create_base_poputation(100)
-"""
-for strats in workingPopulation:
-	print '_' *100
-	print_array(strats.grid)
-	print "the finess of this player statatgy is: " + str(strats.fitness)
-"""
+
 workingPopulation = sorted(workingPopulation, key=lambda StratagyTable: StratagyTable.fitness)
 print "Sorted base pop" * 3
 for strats in workingPopulation:
 	##print '_' *100
 	##print_array(strats.grid) ## uncomment this if you want to see the actual statagy tables 
-	print "the finess of this player statatgy is: " + str(strats.fitness)
+	print "the fitness of this player statatgy is: " + str(strats.fitness)
 
 
 def get_top_50(workingPop): 
@@ -326,24 +302,10 @@ def get_top_50(workingPop):
 	return tempList
 
 
-##workingPopulation = get_top_50(workingPopulation)
-##print 'working pop top 50'*5
-##for strats in workingPopulation:
-	##print "the finess of this player statatgy is: " + str(strats.fitness)
-"""
-testing  = get_top_50(workingPopulation)
-print '-'*50 + 'Top 50' +'-'*50
-for strats in testing:
-	print "the finess of this player statatgy is: " + str(strats.fitness)
-
-best =  testing[-1]
-print_array(best.grid)
-"""
 
 import copy
 
 def mutate(stratagytable): ### Used by 'crossOver' fuction 
-	#newStrat = copy.deepcopy(stratagytable)
 	chanceToMutate = 10 ## % chance of each element mutatating 
 	typesOfMoves = ['Hit','Stay','Double']  ## excluding Split move to simplify code
 	for row in range(32): 
@@ -385,7 +347,7 @@ def create_addtional_mutated50(workingpop50):
 
 ##print 'new mutated 50' *5 
 ##for strats in create_addtional_mutated50(workingPopulation):
-	#print "the finess of this player statatgy is: " + str(strats.fitness)
+	#print "the fitness of this player statatgy is: " + str(strats.fitness)
 
 def genetic_algorithem(numberOfGenerations,workingPopulation):
 	while numberOfGenerations > 0:
@@ -396,9 +358,19 @@ def genetic_algorithem(numberOfGenerations,workingPopulation):
 	return workingPopulation
 
 
+
+
+
 print "-"*50 +'genetic_algorithem' + '-'*50
 workingPopulation = genetic_algorithem(100,workingPopulation)
 for strats in workingPopulation:
 	print "the fitness of this player statatgy is: " + str(strats.fitness)
+print " "
 print "The Best Result in 10 Generations was :" +str(workingPopulation[-1].fitness)
+print "-"*50 +'Best StratagyTable' + '-'*50
 print_array_clean(workingPopulation[-1].grid)
+
+print " "
+play_using_strat(workingPopulation[-1],1000)
+print "After retesting the final stratagy with another 1000 hands its success is: " + str(workingPopulation[-1].fitness)
+print "Player retains "+ str(((workingPopulation[-1].fitness) / 1000.0 )*100) + "% of their money"
