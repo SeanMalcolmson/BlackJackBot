@@ -371,6 +371,5 @@ print "-"*50 +'Best StratagyTable' + '-'*50
 print_array_clean(workingPopulation[-1].grid)
 
 print " "
-play_using_strat(workingPopulation[-1],1000)
-print "After retesting the final stratagy with another 1000 hands its success is: " + str(workingPopulation[-1].fitness)
+
 print "Player retains "+ str(((workingPopulation[-1].fitness) / 1000.0 )*100) + "% of their money"
