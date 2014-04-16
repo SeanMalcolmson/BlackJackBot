@@ -103,6 +103,17 @@ def print_array(array):
 	for rows in array:
 		print str(rowNum)+": " + str(rows)
 		rowNum+=1
+def print_array_clean(array):
+	print "-"*50+"Dealer Card Up" +'-'*50
+	LAYOUT = "{!s:15} {!s:8} {!s:8} {!s:8} {!s:8} {!s:8} {!s:8} {!s:8} {!s:8} {!s:20} {!s:10}"
+	print LAYOUT.format(' ',2,3,4,5,6,7,8,9,"10/Jack/Queen/King","Ace")
+	columnheadings = ["Hard 17+ ","Hard 16","Hard 15","Hard 14","Hard 13","Hard 12","Hard 11","Hard 10","Hard 9","Hard 8","Hard 7","Hard 6","Hard 5",
+	"Soft 21","Soft 20","Soft 19","Soft 18","Soft 17","Soft 16","Soft 15","Soft 14","Soft 13",
+	"Ace, Ace","10 value pairs","9,9","8,8",'7,7',"6,6","5,5","4,4","3,3","2,2"]
+	rowcount = 0
+	for rows in array:
+		print LAYOUT.format(columnheadings[rowcount],rows[0],rows[1],rows[2],rows[3],rows[4],rows[5],rows[6],rows[7],rows[8],rows[9])
+		rowcount+=1
 
 class Player(object):
 	def __init__(self, name = 'BOT', hand = None, money = 0):
@@ -390,4 +401,4 @@ workingPopulation = genetic_algorithem(100,workingPopulation)
 for strats in workingPopulation:
 	print "the fitness of this player statatgy is: " + str(strats.fitness)
 print "The Best Result in 10 Generations was :" +str(workingPopulation[-1].fitness)
-print_array(workingPopulation[-1].grid)
+print_array_clean(workingPopulation[-1].grid)
